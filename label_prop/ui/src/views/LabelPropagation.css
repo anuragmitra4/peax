@@ -1,0 +1,22 @@
+.heading {
+  margin-left: 11.11%;
+}
+
+.higlass_bordered {
+  margin-left: 11.11%;
+  margin-right: 11.11%;
+  padding: 10px;
+  border: blue;
+  border-style: outset;
+  border-width: thin;
+  border-radius: 10px;
+}
+
+.higlass_neighborhood_list {
+  margin-left: 11.11%;
+  margin-right: 11.11%;
+  border: blue;
+  border-style: inset;
+  border-radius: 10px;
+  border-width: thin;
+}

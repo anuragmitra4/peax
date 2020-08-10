@@ -1,0 +1,39 @@
+@import '../styles/colors';
+
+.message {
+  position: relative;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  color: $gray-dark;
+  background: $gray-lightest;
+
+  &.message-info {
+    color: $blue-dark;
+    background: $blue-light;
+  }
+
+  &.message-warning {
+    color: $yellow-dark;
+    background: $yellow-light;
+  }
+
+  &.message-error {
+    color: $pink-dark;
+    background: $pink-light;
+
+    .button {
+      padding: 0.25rem 0.375rem;
+      font-size: 0.9em;
+      background: transparentize($pink-dark, 0.85);
+    }
+  }
+
+  .icon {
+    width: 3em;
+    height: 3em;
+  }
+
+  p {
+    margin: 1em 0 0 0;
+  }
+}

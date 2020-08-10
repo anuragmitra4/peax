@@ -1,0 +1,59 @@
+@import '../styles/colors';
+@import '../styles/transitions';
+
+.bar-chart {
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .y-gridlines line,
+  .y-gridlines-bottom line {
+    stroke: #ddd;
+  }
+
+  .base-bars {
+    fill: adjust-color($blue, $saturation: -20%, $lightness: 50%);
+  }
+
+  .base-bars-bottom {
+    fill: adjust-color($pink, $saturation: -20%, $lightness: 40%);
+  }
+
+  .primary-bars,
+  .primary-bars-bottom {
+    stroke: #fff;
+  }
+
+  .primary-bars {
+    fill: $blue;
+  }
+
+  .primary-bars-bottom {
+    fill: $pink-dark;
+  }
+
+  .x-axis-arrow {
+    fill: $gray-light;
+  }
+
+  [class^='x-axis'] {
+    .domain {
+      color: $gray-light;
+    }
+
+    .tick {
+      color: $gray-light;
+
+      text {
+        color: $gray-medium;
+      }
+    }
+  }
+
+  [class^='y-axis'] {
+    .tick {
+      color: $gray-light;
+    }
+  }
+}

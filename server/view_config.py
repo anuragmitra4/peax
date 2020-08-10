@@ -32,6 +32,8 @@ def build(
     incl_predictions: bool = False,
     incl_autoencodings: bool = False,
     incl_selections: bool = False,
+    incl_neighborhood: bool = False,
+    incl_neighborhood_list: bool = False,
     default: bool = False,
     hide_label: bool = False,
 ) -> dict:
@@ -147,13 +149,21 @@ def build(
             gene_annotation_track_config["options"]["geneLabelPosition"] = "outside"
             gene_annotation_track_config["options"]["geneStrandSpacing"] = 3
 
+        if incl_neighborhood_list:
+            gene_annotation_track_config["height"] *= 0
+            gene_annotation_track_config["options"]["fontSize"] = 0
+            gene_annotation_track_config["options"]["geneAnnotationHeight"] = 0
+            gene_annotation_track_config["options"]["geneLabelPosition"] = "hidden"
+            gene_annotation_track_config["options"]["geneStrandSpacing"] = 0
+
         combined_track_config["height"] = gene_annotation_track_config.get("height")
 
         combined_track_config["contents"].extend(
             [anno_track_config, gene_annotation_track_config]
         )
 
-        view_config["views"][0]["tracks"]["top"].append(combined_track_config)
+        if not incl_neighborhood_list:
+        	view_config["views"][0]["tracks"]["top"].append(combined_track_config)
 
     # Add separate chrom track when more than 1 dataset is explored
     if datasets.length > 1 and config.coords in chromsizes.SUPPORTED_CHROMOSOMES:
@@ -182,7 +192,8 @@ def build(
 
         combined_track_config["height"] = chrom_track.get("height")
 
-        view_config["views"][0]["tracks"]["top"].append(combined_track_config)
+        if not incl_neighborhood_list:
+        	view_config["views"][0]["tracks"]["top"].append(combined_track_config)
 
     # Add default top axis track for unknown coords
     if config.coords not in chromsizes.SUPPORTED_CHROMOSOMES:
@@ -201,12 +212,16 @@ def build(
             axis_track["height"] = 24
             axis_track["options"]["fontSize"] = 12
 
+        if incl_neighborhood_list:
+            axis_track["height"] = 0
+
         # Add the chrom labels to the last track
         combined_track_config["contents"].extend([anno_track_config, axis_track])
 
         combined_track_config["height"] = axis_track.get("height")
 
-        view_config["views"][0]["tracks"]["top"].append(combined_track_config)
+        if not incl_neighborhood_list:
+        	view_config["views"][0]["tracks"]["top"].append(combined_track_config)
 
     for i, dataset in enumerate(datasets):
         # Determine x-domain limits
@@ -268,6 +283,18 @@ def build(
                 bw_track_config["options"]["axisMargin"] = 0
                 bw_track_config["options"]["labelPosition"] = "topRight"
                 bw_track_config["options"]["labelLeftMargin"] = 0
+
+            if incl_neighborhood or incl_neighborhood_list:
+                bw_track_config["height"] /= 3
+                bw_track_config["type"] = "1d-heatmap"
+                bw_track_config["options"]["axisMargin"] = 0
+                bw_track_config["options"]["labelPosition"] = "hidden"
+                bw_track_config["options"]["labelLeftMargin"] = 0
+                color_index = i % len(defaults.DATA_TRACK_COLORS_NEIGHBORHOOD)
+                bw_track_config["options"]["colorRange"] = [
+                    "white", 
+                    defaults.DATA_TRACK_COLORS_NEIGHBORHOOD[color_index]
+                ]
 
             combined_track_config["height"] = bw_track_config.get("height")
             combined_track_config["contents"].extend(
@@ -346,6 +373,40 @@ def combine(view_configs, config):
 
 def height(datasets, config):
     view_config = build(datasets, config)
+    total_height = 0
+
+    for track in view_config["views"][0]["tracks"]["top"]:
+        total_height += track.get("height", 0)
+
+    extra_target_height = defaults.SELECTION_TRACK.get("height", 0)
+    extra_target_height += defaults.LABEL_TRACK.get("height", 0)
+
+    extra_probs_height = defaults.CLASS_PROB_TRACK.get("height", 0)
+
+    target_height = total_height + extra_target_height
+    max_height = target_height + extra_probs_height
+
+    return total_height, target_height, max_height
+
+def heightNeighborhood(datasets, config):
+    view_config = build(datasets, config, incl_neighborhood=True)
+    total_height = 0
+
+    for track in view_config["views"][0]["tracks"]["top"]:
+        total_height += track.get("height", 0)
+
+    extra_target_height = defaults.SELECTION_TRACK.get("height", 0)
+    extra_target_height += defaults.LABEL_TRACK.get("height", 0)
+
+    extra_probs_height = defaults.CLASS_PROB_TRACK.get("height", 0)
+
+    target_height = total_height + extra_target_height
+    max_height = target_height + extra_probs_height
+
+    return total_height, target_height, max_height
+
+def heightNeighborhoodList(datasets, config):
+    view_config = build(datasets, config, incl_neighborhood_list=True)
     total_height = 0
 
     for track in view_config["views"][0]["tracks"]["top"]:

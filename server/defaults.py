@@ -159,7 +159,11 @@ LINE_TRACK = {
 
 DATA_TRACK_COLORS = ["#003ba8", "#008ca8", "#d24f00", "#d2ad00", "#8c00b8"]
 
+DATA_TRACK_COLORS_NEIGHBORHOOD = ["blue", "turquoise", "orange", "#FFC800", "4D8B31"]
+
 DATA_TRACK_HEIGHTS = [60, 40, 30, 25, 22, 19, 17]
+
+DATA_TRACK_HEIGHTS_NEIGHBORHOOD =[24, 16, 12, 10, 8, 6, 6]
 
 ENCODINGS_TRACK = {
     "server": "//localhost:5000/api/v1",

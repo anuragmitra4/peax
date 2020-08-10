@@ -23,6 +23,9 @@ from flask import request, jsonify, send_from_directory
 from flask_cors import CORS
 from scipy.spatial.distance import cdist
 
+# for the randint function in neighborhood
+import random
+
 from server import (
     bigwig,
     chromsizes,
@@ -144,7 +147,22 @@ def create(
     @app.route("/api/v1/search/", methods=["GET", "POST", "DELETE"])
     def search():
         if request.method == "GET":
-            search_id = request.args.get("id")
+            arg = request.args.get("id")
+            incl_neighborhood = False
+            incl_neighborhood_list = False
+
+            search_id = arg
+
+            if arg is not None:
+            	parts = arg.split(".")
+            	with utils.suppress_with_default(IndexError, default=None) as search_id:
+                	search_id = parts[0]
+
+            	with utils.suppress_with_default(IndexError, default="") as options:
+                	options = parts[1]
+                	incl_neighborhood = options.find("n") >= 0
+                	incl_neighborhood_list = options.find("l") >= 0
+
             max_res = int(request.args.get("max", "-1"))
             info = db.get_search(search_id)
 
@@ -154,9 +172,18 @@ def create(
                     404,
                 )
 
-            viewHeight, viewHeightTarget, viewHeightMax = view_config.height(
-                datasets, config
-            )
+            if (incl_neighborhood):
+                viewHeight, viewHeightTarget, viewHeightMax = view_config.heightNeighborhood(
+                    datasets, config
+                )
+            elif (incl_neighborhood_list): 
+                viewHeight, viewHeightTarget, viewHeightMax = view_config.heightNeighborhoodList(
+                    datasets, config
+                )
+            else: 
+            	viewHeight, viewHeightTarget, viewHeightMax = view_config.height(
+                    datasets, config
+                )
 
             if search_id is None:
                 if max_res > 0:
@@ -656,6 +683,26 @@ def create(
 
         return jsonify({"error": "Unsupported action"}), 500
 
+
+    @app.route("/api/v1/neighborhood/", methods=["GET"])
+    def sample_neighborhoods():
+        # for now just ask for one sample then return 5 randomised items
+        search_id = request.args.get("s")
+
+        body = request.args.get("s")
+        response = []
+
+        for b in body:
+            neighbors = []
+            neighbors.append(int(b))
+            for i in range(4):
+                neighbors.append(random.randint(0,2000))
+
+            response.append(neighbors)
+
+        return jsonify({"neighbors": response})
+
+
     @app.route("/api/v1/classifications/", methods=["GET"])
     def classifications():
         search_id = request.args.get("s")
@@ -890,6 +937,8 @@ def create(
                 )
                 incl_autoencodings = options.find("e") >= 0
                 incl_selections = options.find("s") >= 0
+                incl_neighborhood = options.find("n") >= 0
+                incl_neighborhood_list = options.find("l") >= 0 
 
                 if window_id is not None and utils.is_int(window_id, True):
                     if search_info is not None:
@@ -915,6 +964,8 @@ def create(
                                 incl_predictions=incl_predictions,
                                 incl_autoencodings=incl_autoencodings,
                                 incl_selections=incl_selections,
+                                incl_neighborhood=incl_neighborhood,
+                                incl_neighborhood_list=incl_neighborhood_list,
                                 hide_label=True,
                             )
                         )
@@ -962,6 +1013,8 @@ def create(
                                         incl_predictions=incl_predictions,
                                         incl_autoencodings=incl_autoencodings,
                                         incl_selections=incl_selections,
+                                        incl_neighborhood=incl_neighborhood,
+                                        incl_neighborhood_list=incl_neighborhood_list,
                                     )
                                 )
 
@@ -978,6 +1031,8 @@ def create(
                                         incl_predictions=incl_predictions,
                                         incl_autoencodings=incl_autoencodings,
                                         incl_selections=incl_selections,
+                                        incl_neighborhood=incl_neighborhood,
+                                        incl_neighborhood_list=incl_neighborhood_list,
                                     )
                                 )
 
@@ -990,6 +1045,8 @@ def create(
                                     incl_predictions=incl_predictions,
                                     incl_autoencodings=incl_autoencodings,
                                     incl_selections=incl_selections,
+                                    incl_neighborhood=incl_neighborhood,
+                                    incl_neighborhood_list=incl_neighborhood_list,
                                 )
                             )
 
